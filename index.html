@@ -3,428 +3,487 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CorpAdmin Uganda - Shareholder & Loan Tracker</title>
+    <title>ScoreMaster - Management Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide-react/0.263.0/umd/lucide-react.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
         
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-        
-        .font-mono {
-            font-family: 'JetBrains Mono', monospace;
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .sticky-column {
+            position: sticky;
+            left: 0;
+            z-index: 20;
+            background-color: white;
+            box-shadow: 4px 0 10px -4px rgba(0,0,0,0.1);
         }
 
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background-color: white;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
+
+        .corner-cell {
+            position: sticky;
+            top: 0;
+            left: 0;
+            z-index: 40;
+            background-color: white;
+            box-shadow: 4px 4px 10px -4px rgba(0,0,0,0.1);
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #e2e8f0;
-            border-radius: 10px;
+
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        .animate-slide-in {
-            animation: slideIn 0.3s ease-out forwards;
+        .shake { animation: shake 0.4s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
 
-        @keyframes slideIn {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
-        }
-
-        .tab-transition {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        /* Toggle Switch Styling */
+        .dot { transition: all 0.3s ease-in-out; }
+        input:checked ~ .dot { transform: translateX(100%); background-color: #4f46e5; }
+        input:checked ~ .block { background-color: #e0e7ff; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 overflow-hidden">
+<body class="bg-slate-50 text-slate-900 overflow-hidden h-screen">
 
-<div class="flex h-screen w-full">
-    <!-- Sidebar -->
-    <nav class="hidden lg:flex flex-col w-72 bg-white border-r border-slate-200 p-8 shrink-0">
-        <div class="mb-10 flex items-center gap-3">
-            <div class="bg-blue-600 p-2 rounded-xl text-white shadow-lg shadow-blue-200">
-                <i data-lucide="briefcase" class="w-6 h-6"></i>
-            </div>
-            <div>
-                <h1 class="text-xl font-black tracking-tight leading-none">CorpAdmin</h1>
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Uganda Edition</p>
-            </div>
-        </div>
-
-        <div class="space-y-1.5 flex-1">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 ml-4">Main Menu</p>
-            
-            <button onclick="switchTab('equity')" id="btn-equity" class="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all bg-blue-50 text-blue-700 font-bold text-sm">
-                <div class="flex items-center gap-3">
-                    <i data-lucide="users" class="w-5 h-5"></i>
-                    <span>Shareholders</span>
+    <!-- Login Screen -->
+    <div id="login-view" class="flex items-center justify-center h-full p-6">
+        <div class="w-full max-w-md bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100 fade-in">
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-indigo-600 rounded-3xl text-white shadow-2xl mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
                 </div>
-                <div class="indicator w-1.5 h-1.5 rounded-full bg-blue-600"></div>
-            </button>
-
-            <button onclick="switchTab('loans')" id="btn-loans" class="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all text-slate-500 hover:bg-slate-50 font-bold text-sm">
-                <div class="flex items-center gap-3">
-                    <i data-lucide="hand-coins" class="w-5 h-5"></i>
-                    <span>Loan Takers</span>
+                <h1 class="text-3xl font-black text-slate-900">ScoreMaster</h1>
+                <p class="text-slate-500 mt-2">Administrative Management Suite</p>
+            </div>
+            <form id="login-form" class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Email Address</label>
+                    <input id="email" type="email" value="admin@school.edu" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all">
                 </div>
-                <div class="indicator hidden w-1.5 h-1.5 rounded-full bg-emerald-600"></div>
-            </button>
-        </div>
-
-        <div class="mt-auto bg-slate-900 rounded-3xl p-6 text-white overflow-hidden relative">
-            <div class="relative z-10">
-                <p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Portfolio Value</p>
-                <p id="total-portfolio" class="text-xl font-black font-mono">UGX 6,500,000</p>
-            </div>
-            <div class="absolute -right-4 -bottom-4 opacity-10 rotate-12">
-                <i data-lucide="wallet" class="w-24 h-24"></i>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col relative overflow-hidden">
-        <main id="content-area" class="flex-1 p-6 md:p-10 overflow-y-auto custom-scrollbar">
-            
-            <!-- EQUITY PAGE -->
-            <div id="page-equity" class="tab-content">
-                <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div>
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-widest mb-3">
-                            Equity Portal
-                        </div>
-                        <h2 class="text-4xl font-black tracking-tight text-slate-900">Shareholder Registry</h2>
-                        <p class="text-slate-500 font-medium mt-1 italic">Manage ownership units and member discussions</p>
-                    </div>
-                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-4 min-w-[200px]">
-                        <div class="p-2.5 bg-blue-50 rounded-xl text-blue-600"><i data-lucide="trending-up" class="w-5 h-5"></i></div>
-                        <div>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Units</p>
-                            <p id="total-units" class="text-xl font-black">1,000,000</p>
-                        </div>
-                    </div>
-                </header>
-
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                    <div class="xl:col-span-2 space-y-6">
-                        <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
-                            <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
-                                <h3 class="font-bold text-slate-800">Partners List</h3>
-                                <button class="text-blue-600 hover:text-blue-700 text-xs font-black uppercase flex items-center gap-1">
-                                    <i data-lucide="plus" class="w-4 h-4"></i> Add Partner
-                                </button>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full">
-                                    <thead>
-                                        <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
-                                            <th class="px-8 py-4 text-left">Shareholder</th>
-                                            <th class="px-8 py-4 text-left">Stock Units</th>
-                                            <th class="px-8 py-4 text-center">Comm.</th>
-                                            <th class="px-8 py-4 text-right">Stake</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="shareholders-table" class="divide-y divide-slate-100">
-                                        <!-- Dynamic Content -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="space-y-6">
-                        <div class="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm text-center">
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-8">Cap Table Summary</p>
-                            <div class="h-64 flex justify-center items-center relative">
-                                <canvas id="equityChart"></canvas>
-                            </div>
-                            <div id="chart-legend" class="mt-8 space-y-2"></div>
-                        </div>
-                    </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Password</label>
+                    <input id="password" type="password" value="admin123" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all">
                 </div>
-            </div>
-
-            <!-- LOANS PAGE -->
-            <div id="page-loans" class="tab-content hidden">
-                <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div>
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest mb-3">
-                            Lending Portal
-                        </div>
-                        <h2 class="text-4xl font-black tracking-tight text-slate-900">Loan Takers Ledger</h2>
-                        <p class="text-slate-500 font-medium mt-1 italic">Monitor member credit and repayment cycles</p>
-                    </div>
-                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-4 min-w-[240px]">
-                        <div class="p-2.5 bg-emerald-50 rounded-xl text-emerald-600"><i data-lucide="hand-coins" class="w-5 h-5"></i></div>
-                        <div>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Credit</p>
-                            <p id="active-credit-total" class="text-xl font-black text-emerald-700 font-mono">UGX 0</p>
-                        </div>
-                    </div>
-                </header>
-
-                <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
-                        <h3 class="font-bold text-slate-800">Active Disbursements</h3>
-                        <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-900/10">
-                            New Loan
-                        </button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
-                                    <th class="px-8 py-4 text-left">Borrower</th>
-                                    <th class="px-8 py-4 text-left">Capital Breakdown</th>
-                                    <th class="px-8 py-4 text-left">Repayment Timeline</th>
-                                    <th class="px-8 py-4 text-left">Status</th>
-                                    <th class="px-8 py-4 text-right">Settlement Total</th>
-                                </tr>
-                            </thead>
-                            <tbody id="loans-table" class="divide-y divide-slate-100">
-                                <!-- Dynamic Content -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-        </main>
-
-        <!-- Sidebar Discussion (Drawer) -->
-        <div id="discussion-sidebar" class="hidden absolute inset-y-0 right-0 w-full md:w-[450px] bg-white shadow-2xl border-l border-slate-200 z-50 flex flex-col animate-slide-in">
-            <div class="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                <div class="flex items-center gap-4">
-                    <div id="drawer-avatar" class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold">KM</div>
-                    <div>
-                        <h3 id="drawer-name" class="font-black text-slate-900 tracking-tight">Name Here</h3>
-                        <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest">Stakeholder Briefing</p>
-                    </div>
-                </div>
-                <button onclick="closeDrawer()" class="p-2 hover:bg-white rounded-xl border border-transparent hover:border-slate-200 transition-all">
-                    <i data-lucide="x" class="w-5 h-5 text-slate-400"></i>
-                </button>
-            </div>
-            <div id="comments-list" class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-                <!-- Comments injected here -->
-            </div>
-            <div class="p-8 border-t border-slate-100 bg-slate-50/30">
-                <div class="relative">
-                    <textarea id="comment-input" placeholder="Type a strategic note..." class="w-full bg-white border border-slate-200 rounded-[1.5rem] p-5 text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none shadow-sm min-h-[120px]"></textarea>
-                    <button class="absolute bottom-4 right-4 bg-blue-600 text-white p-2.5 rounded-xl shadow-lg shadow-blue-900/20 hover:bg-blue-700">
-                        <i data-lucide="send" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </div>
+                <button type="submit" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl hover:bg-indigo-700 active:scale-[0.98] transition-all mt-4">Sign In</button>
+            </form>
         </div>
     </div>
-</div>
 
-<script>
-    // Initial State
-    const state = {
-        activeTab: 'equity',
-        shareholders: [
-            { id: '1', name: 'Katamba Moses', shares: 550000, discussions: [{ user: 'Admin', text: 'Confirmed Q1 capital.', date: '2023-10-01' }] },
-            { id: '2', name: 'Nalule Sarah', shares: 320000, discussions: [] },
-            { id: '3', name: 'Ochieng David', shares: 130000, discussions: [] }
-        ],
-        loans: [
-            { id: 'L-1024', memberName: 'Katamba Moses', amount: 4500000, interest: 12, issue: '2024-01-10', due: '2024-12-10' },
-            { id: 'L-1025', memberName: 'Nansubuga Jane', amount: 1200000, interest: 15, issue: '2024-02-15', due: '2024-05-15' },
-            { id: 'L-1026', memberName: 'Ssebugwawo John', amount: 800000, interest: 10, issue: '2023-11-01', due: '2024-02-01' }
-        ]
-    };
+    <!-- Main App View -->
+    <div id="main-view" class="hidden flex h-full">
+        <!-- Sidebar -->
+        <aside class="w-72 bg-white border-r border-slate-100 flex flex-col shrink-0">
+            <div class="p-8 border-b border-slate-50 mb-4">
+                <h2 class="text-2xl font-black text-slate-900">ScoreMaster</h2>
+            </div>
+            <nav class="p-4 space-y-2 flex-1 overflow-y-auto" id="class-nav">
+                <!-- Class buttons injected here -->
+            </nav>
+            <div class="p-6">
+                <button id="logout-btn" class="w-full py-4 bg-slate-50 text-rose-500 rounded-2xl font-bold flex items-center justify-center gap-2 border border-slate-100 hover:bg-rose-50 transition-colors">
+                    Logout
+                </button>
+            </div>
+        </aside>
 
-    const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
-
-    // Utils
-    const formatUGX = (val) => {
-        return new Intl.NumberFormat('en-UG', {
-            style: 'currency',
-            currency: 'UGX',
-            maximumFractionDigits: 0
-        }).format(val);
-    };
-
-    const getInitials = (name) => name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-
-    // UI Rendering
-    function renderShareholders() {
-        const table = document.getElementById('shareholders-table');
-        const total = state.shareholders.reduce((acc, s) => acc + s.shares, 0);
-        document.getElementById('total-units').innerText = total.toLocaleString();
-
-        table.innerHTML = state.shareholders.map(s => `
-            <tr onclick="openDrawer('${s.id}')" class="group cursor-pointer hover:bg-slate-50 transition-all">
-                <td class="px-8 py-5">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-500 border border-white shadow-sm">${getInitials(s.name)}</div>
-                        <div class="font-bold text-sm text-slate-800">${s.name}</div>
+        <!-- Content Area -->
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <!-- Navigation Header -->
+            <header class="bg-white border-b border-slate-100 px-8 py-4 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-8">
+                    <div>
+                        <h3 id="current-class-title" class="text-xl font-black text-slate-800">Select a Class</h3>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Controller</p>
                     </div>
-                </td>
-                <td class="px-8 py-5 font-mono text-sm font-bold text-slate-600">${s.shares.toLocaleString()}</td>
-                <td class="px-8 py-5 text-center">
-                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-500 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                        <i data-lucide="message-square" class="w-3 h-3"></i>
-                        <span class="text-[10px] font-black">${s.discussions.length}</span>
+                    <nav class="flex bg-slate-100 p-1 rounded-xl">
+                        <button onclick="switchView('entry')" id="nav-entry" class="px-4 py-2 rounded-lg text-xs font-black transition-all">Entry Sheet</button>
+                        <button onclick="switchView('dashboard')" id="nav-dashboard" class="px-4 py-2 rounded-lg text-xs font-black transition-all">Dashboard</button>
+                        <button onclick="switchView('reports')" id="nav-reports" class="px-4 py-2 rounded-lg text-xs font-black transition-all">Reports</button>
+                        <button onclick="switchView('assignments')" id="nav-assignments" class="px-4 py-2 rounded-lg text-xs font-black transition-all">Assignments</button>
+                    </nav>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="relative" id="search-container">
+                        <input id="search-students" type="text" placeholder="Filter..." class="pl-10 pr-6 py-2.5 bg-slate-100 rounded-xl text-xs outline-none w-48 focus:ring-2 ring-indigo-500/20 transition-all focus:w-64">
+                        <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                     </div>
-                </td>
-                <td class="px-8 py-5 text-right font-black text-blue-600">${((s.shares/total)*100).toFixed(1)}%</td>
-            </tr>
-        `).join('');
-        lucide.createIcons();
-        updateChart();
-    }
+                </div>
+            </header>
 
-    function renderLoans() {
-        const table = document.getElementById('loans-table');
-        const totalAmount = state.loans.reduce((acc, l) => acc + l.amount, 0);
-        document.getElementById('active-credit-total').innerText = formatUGX(totalAmount);
-        document.getElementById('total-portfolio').innerText = formatUGX(totalAmount);
+            <!-- Dynamic Views -->
+            <div id="content-viewport" class="flex-1 overflow-auto p-6 bg-slate-100">
+                <!-- Entry View -->
+                <div id="view-entry" class="h-full">
+                    <div class="bg-white rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden flex flex-col h-full fade-in">
+                        <div class="overflow-auto flex-1 relative">
+                            <table class="w-full text-left border-separate border-spacing-0 min-w-max" id="score-table"></table>
+                        </div>
+                    </div>
+                </div>
 
-        table.innerHTML = state.loans.map(l => {
-            const totalOwed = l.amount * (1 + l.interest/100);
-            const dueDate = new Date(l.due);
-            const isOverdue = dueDate < new Date();
-            
-            return `
-                <tr class="hover:bg-slate-50 transition-all">
-                    <td class="px-8 py-6">
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">${getInitials(l.memberName)}</div>
+                <!-- Dashboard View -->
+                <div id="view-dashboard" class="hidden space-y-6 fade-in">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Class Average</p>
+                            <h4 id="stat-avg" class="text-4xl font-black text-indigo-600">0%</h4>
+                        </div>
+                        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pass Rate</p>
+                            <h4 id="stat-pass" class="text-4xl font-black text-emerald-500">0%</h4>
+                        </div>
+                        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Top Student</p>
+                            <h4 id="stat-top" class="text-xl font-black text-slate-800 truncate">--</h4>
+                        </div>
+                    </div>
+                    <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
+                        <h5 class="text-lg font-black mb-6">Subject Performance</h5>
+                        <div id="subject-stats-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4"></div>
+                    </div>
+                </div>
+
+                <!-- Report Cards View -->
+                <div id="view-reports" class="hidden fade-in">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="report-cards-grid"></div>
+                </div>
+
+                <!-- Assignments View -->
+                <div id="view-assignments" class="hidden fade-in space-y-8">
+                    <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-8">
                             <div>
-                                <div class="font-bold text-sm text-slate-800">${l.memberName}</div>
-                                <div class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">${l.id}</div>
+                                <h4 class="text-2xl font-black text-slate-900">Subject Allocation</h4>
+                                <p class="text-slate-500 text-sm">Enable or disable subjects for <span class="font-bold text-indigo-600 active-class-name">Senior One</span></p>
+                            </div>
+                            <button class="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-xs shadow-lg hover:bg-indigo-700 transition-all">Save Configuration</button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="subject-assignment-list">
+                            <!-- Injected -->
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                            <h5 class="text-lg font-black mb-4">Class Parameters</h5>
+                            <div class="space-y-4">
+                                <div class="p-4 bg-slate-50 rounded-2xl flex justify-between items-center">
+                                    <span class="text-sm font-bold text-slate-600">Total Enrollment</span>
+                                    <span class="px-3 py-1 bg-white border border-slate-200 rounded-lg font-black text-slate-800" id="enrollment-count">0</span>
+                                </div>
+                                <div class="p-4 bg-slate-50 rounded-2xl flex justify-between items-center">
+                                    <span class="text-sm font-bold text-slate-600">Term Duration</span>
+                                    <span class="text-sm font-black text-slate-800">12 Weeks</span>
+                                </div>
+                                <div class="p-4 bg-slate-50 rounded-2xl flex justify-between items-center">
+                                    <span class="text-sm font-bold text-slate-600">Grading Scale</span>
+                                    <span class="text-xs font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase">Standard O-Level</span>
+                                </div>
                             </div>
                         </div>
-                    </td>
-                    <td class="px-8 py-6">
-                        <div class="font-mono text-sm font-bold text-slate-800">${formatUGX(l.amount)}</div>
-                        <div class="text-[9px] font-black text-emerald-600 uppercase mt-1">${l.interest}% Interest Rate</div>
-                    </td>
-                    <td class="px-8 py-6">
-                        <div class="flex flex-col gap-1 text-[10px] font-bold text-slate-500">
-                            <span>Issue: ${l.issue}</span>
-                            <span>Due: ${l.due}</span>
+                        
+                        <div class="bg-indigo-600 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden">
+                            <div class="relative z-10">
+                                <h5 class="text-xl font-black mb-2">Teacher Assignment</h5>
+                                <p class="text-indigo-100 text-sm mb-6">Assign head teachers and subject leads for this class section.</p>
+                                <button class="w-full py-4 bg-white text-indigo-600 rounded-2xl font-black text-sm hover:bg-indigo-50 transition-colors">Manage Staff List</button>
+                            </div>
+                            <svg class="absolute -right-10 -bottom-10 text-indigo-500 opacity-20" width="200" height="200" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                         </div>
-                    </td>
-                    <td class="px-8 py-6">
-                        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${isOverdue ? 'bg-red-50 border-red-100 text-red-600 animate-pulse' : 'bg-emerald-50 border-emerald-100 text-emerald-600'}">
-                            <div class="w-1.5 h-1.5 rounded-full ${isOverdue ? 'bg-red-500' : 'bg-emerald-500'}"></div>
-                            ${isOverdue ? 'Overdue' : 'Active'}
-                        </span>
-                    </td>
-                    <td class="px-8 py-6 text-right font-mono font-black text-slate-900">${formatUGX(totalOwed)}</td>
-                </tr>
-            `;
-        }).join('');
-        lucide.createIcons();
-    }
-
-    // Chart Management
-    let myChart = null;
-    function updateChart() {
-        const ctx = document.getElementById('equityChart').getContext('2d');
-        const data = state.shareholders.map(s => s.shares);
-        const labels = state.shareholders.map(s => s.name);
-        
-        if(myChart) myChart.destroy();
-        
-        myChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    backgroundColor: COLORS,
-                    borderWidth: 0,
-                    hoverOffset: 15
-                }]
-            },
-            options: {
-                cutout: '75%',
-                plugins: { legend: { display: false } }
-            }
-        });
-
-        // Legend
-        const legend = document.getElementById('chart-legend');
-        const total = data.reduce((a, b) => a + b, 0);
-        legend.innerHTML = state.shareholders.map((s, i) => `
-            <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                <div class="flex items-center gap-3">
-                    <div class="w-2 h-2 rounded-full" style="background-color: ${COLORS[i]}"></div>
-                    <span class="text-xs font-bold text-slate-600">${s.name}</span>
+                    </div>
                 </div>
-                <span class="text-xs font-black text-slate-900">${((s.shares/total)*100).toFixed(1)}%</span>
             </div>
-        `).join('');
-    }
+        </main>
+    </div>
 
-    // Tab Logic
-    function switchTab(tabId) {
-        state.activeTab = tabId;
-        
-        // Update Buttons
-        ['equity', 'loans'].forEach(id => {
-            const btn = document.getElementById(`btn-${id}`);
-            const indicator = btn.querySelector('.indicator');
-            if(id === tabId) {
-                btn.className = `w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all font-bold text-sm bg-${id === 'equity' ? 'blue' : 'emerald'}-50 text-${id === 'equity' ? 'blue' : 'emerald'}-700`;
-                indicator.classList.remove('hidden');
+    <!-- Modals -->
+    <div id="lock-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-6">
+        <div id="lock-card" class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md p-8 transition-transform">
+            <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 mb-6 mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="text-center mb-6">
+                <h3 class="text-xl font-black text-slate-900" id="modal-subject-title">Unlock Subject</h3>
+                <p id="lock-error" class="hidden text-rose-500 text-xs font-bold mt-2">Incorrect key.</p>
+            </div>
+            <form id="lock-form" class="space-y-4">
+                <input id="subject-key-input" type="password" required class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-center text-lg font-black focus:ring-2 ring-indigo-500/20" placeholder="••••••••">
+                <div class="flex gap-4">
+                    <button type="button" id="close-modal" class="flex-1 py-3 font-bold text-slate-400">Cancel</button>
+                    <button type="submit" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-black shadow-lg">Unlock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const CLASSES = ['Senior One', 'Senior Two', 'Senior Three', 'Senior Four', 'Senior Five', 'Senior Six'];
+        const SUBJECTS = ['Math', 'Physics', 'Chemistry', 'Biology', 'Agric', 'F&N', 'Geo', 'Hist', 'Luganda', 'English', 'CRE', 'IRE', 'Lit', 'Kiswahili'];
+        const PASSWORDS = { 'Math': 'math123', 'Physics': 'phy123', 'Chemistry': 'che123', 'Biology': 'bio123', 'Agric': 'agric123', 'F&N': 'fn123', 'Geo': 'geo123', 'Hist': 'hist123', 'Luganda': 'lug123', 'English': 'eng123', 'CRE': 'cre123', 'IRE': 'ire123', 'Lit': 'lit123', 'Kiswahili': 'swahili123' };
+        const DEFAULT_KEY = 'admin123';
+
+        let activeClass = 'Senior One';
+        let activeView = 'entry';
+        let unlockedSubjects = [];
+        let schoolData = {};
+        let pendingSubject = null;
+        let subjectStatus = {}; // Tracks enabled/disabled subjects per class
+
+        function initData() {
+            const firstNames = ['James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda'];
+            const lastNames = ['Okello', 'Mugisha', 'Musoke', 'Atim', 'Nakamya', 'Kiwanuka', 'Bakka'];
+            
+            CLASSES.forEach(cls => {
+                subjectStatus[cls] = {};
+                SUBJECTS.forEach(sub => subjectStatus[cls][sub] = true); // All enabled by default
+
+                const students = [];
+                for (let i = 1; i <= 40; i++) {
+                    const name = `${firstNames[Math.floor(Math.random()*8)]} ${lastNames[Math.floor(Math.random()*7)]}`;
+                    const scores = {};
+                    SUBJECTS.forEach(sub => scores[sub] = Math.floor(Math.random() * 60) + 30);
+                    students.push({ id: `${cls}-${i}`, name, roll: `2024/${i.toString().padStart(3, '0')}`, scores });
+                }
+                schoolData[cls] = students;
+            });
+        }
+
+        function switchView(view) {
+            activeView = view;
+            document.querySelectorAll('#content-viewport > div').forEach(div => div.classList.add('hidden'));
+            document.getElementById(`view-${view}`).classList.remove('hidden');
+            
+            document.querySelectorAll('header nav button').forEach(btn => {
+                btn.classList.remove('bg-white', 'shadow-sm', 'text-indigo-600');
+                btn.classList.add('text-slate-500');
+            });
+            const activeBtn = document.getElementById(`nav-${view}`);
+            activeBtn.classList.add('bg-white', 'shadow-sm', 'text-indigo-600');
+            activeBtn.classList.remove('text-slate-500');
+
+            if(view === 'entry') renderTable();
+            if(view === 'dashboard') renderDashboard();
+            if(view === 'reports') renderReports();
+            if(view === 'assignments') renderAssignments();
+        }
+
+        function renderTable() {
+            const table = document.getElementById('score-table');
+            const searchTerm = document.getElementById('search-students').value.toLowerCase();
+            const students = schoolData[activeClass].filter(s => s.name.toLowerCase().includes(searchTerm));
+            const activeSubjects = SUBJECTS.filter(s => subjectStatus[activeClass][s]);
+
+            let html = `<thead><tr><th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase corner-cell border-b border-slate-100 min-w-[220px]">Student Info</th>`;
+            activeSubjects.forEach(sub => {
+                const isUnlocked = unlockedSubjects.includes(sub);
+                html += `<th class="p-2 border-b border-slate-100 text-center sticky-header bg-white min-w-[100px]">
+                    <button onclick="handleHeaderClick('${sub}')" class="flex flex-col items-center gap-1 w-full p-2 rounded-xl transition-all ${isUnlocked ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-400 hover:bg-slate-50'}">
+                        <span class="text-[9px] font-black uppercase tracking-tight">${sub}</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="${isUnlocked ? 'text-emerald-500' : ''}">
+                            ${isUnlocked ? '<path d="M7 11V7a5 5 0 0 1 10 0v4"/><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M12 11v4"/>' : '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'}
+                        </svg>
+                    </button>
+                </th>`;
+            });
+            html += `<th class="p-4 text-center text-[10px] font-black text-slate-500 uppercase sticky-header border-b border-slate-100 min-w-[80px]">Avg</th></tr></thead><tbody>`;
+
+            students.forEach((s, idx) => {
+                const scoresToAverage = activeSubjects.map(sub => s.scores[sub]);
+                const avg = (scoresToAverage.reduce((a,b) => a+b, 0) / activeSubjects.length).toFixed(1);
+                
+                html += `<tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'} hover:bg-indigo-50/30 transition-colors">
+                    <td class="px-6 py-3 sticky-column bg-inherit border-b border-slate-50">
+                        <p class="font-black text-slate-800 text-xs truncate">${s.name}</p>
+                        <p class="text-[8px] text-slate-400 font-mono font-bold">${s.roll}</p>
+                    </td>
+                    ${activeSubjects.map(sub => {
+                        const isUnlocked = unlockedSubjects.includes(sub);
+                        return `<td class="p-1.5 text-center border-b border-slate-50">
+                            <input type="number" ${!isUnlocked ? 'readonly' : ''} value="${s.scores[sub]}"
+                                onchange="updateScore('${s.id}', '${sub}', this.value)"
+                                onclick="if(!${isUnlocked}) handleHeaderClick('${sub}')"
+                                class="w-full max-w-[70px] h-9 text-center rounded-lg font-black text-xs outline-none border transition-all ${isUnlocked ? 'bg-white border-slate-200 text-indigo-700 focus:ring-2 ring-indigo-500/20' : 'bg-slate-100/50 border-transparent text-transparent cursor-pointer'}">
+                        </td>`;
+                    }).join('')}
+                    <td class="p-3 text-center border-b border-slate-50"><span class="font-black text-indigo-600 text-[11px] bg-indigo-50 px-2 py-1 rounded-md">${avg}%</span></td></tr>`;
+            });
+            table.innerHTML = html + `</tbody>`;
+        }
+
+        function renderDashboard() {
+            const students = schoolData[activeClass];
+            const activeSubjects = SUBJECTS.filter(s => subjectStatus[activeClass][s]);
+            const allScores = students.flatMap(s => activeSubjects.map(sub => s.scores[sub]));
+            
+            const classAvg = (allScores.reduce((a,b) => a+b, 0) / allScores.length).toFixed(1);
+            const passCount = allScores.filter(s => s >= 50).length;
+            const passRate = ((passCount / allScores.length) * 100).toFixed(1);
+
+            const sortedStudents = [...students].sort((a,b) => {
+                const sumA = activeSubjects.reduce((x,y) => x + a.scores[y], 0);
+                const sumB = activeSubjects.reduce((x,y) => x + b.scores[y], 0);
+                return sumB - sumA;
+            });
+
+            document.getElementById('stat-avg').innerText = `${classAvg}%`;
+            document.getElementById('stat-pass').innerText = `${passRate}%`;
+            document.getElementById('stat-top').innerText = sortedStudents[0].name;
+
+            let subHtml = '';
+            activeSubjects.forEach(sub => {
+                const scores = students.map(s => s.scores[sub]);
+                const avg = (scores.reduce((a,b) => a+b, 0) / scores.length).toFixed(0);
+                subHtml += `<div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center">
+                    <p class="text-[9px] font-black text-slate-400 uppercase mb-2">${sub}</p>
+                    <p class="text-xl font-black text-slate-700">${avg}%</p>
+                </div>`;
+            });
+            document.getElementById('subject-stats-grid').innerHTML = subHtml;
+        }
+
+        function renderReports() {
+            const searchTerm = document.getElementById('search-students').value.toLowerCase();
+            const students = schoolData[activeClass].filter(s => s.name.toLowerCase().includes(searchTerm));
+            const activeSubjects = SUBJECTS.filter(s => subjectStatus[activeClass][s]);
+            const grid = document.getElementById('report-cards-grid');
+            
+            grid.innerHTML = students.map(s => {
+                const avg = (activeSubjects.reduce((a,b) => a + s.scores[b], 0) / activeSubjects.length).toFixed(1);
+                return `
+                <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden group hover:border-indigo-300 transition-all">
+                    <div class="mb-6">
+                        <h5 class="text-lg font-black text-slate-800">${s.name}</h5>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${s.roll} • ${activeClass}</p>
+                    </div>
+                    <div class="space-y-2 mb-6">
+                        ${activeSubjects.slice(0, 4).map(sub => `
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="text-slate-500">${sub}</span>
+                                <span class="${s.scores[sub] >= 50 ? 'text-slate-800' : 'text-rose-500'}">${s.scores[sub]}%</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="flex items-center justify-between pt-6 border-t border-slate-50">
+                        <div>
+                            <p class="text-[8px] font-black text-slate-400 uppercase">Average</p>
+                            <p class="text-2xl font-black text-indigo-600">${avg}%</p>
+                        </div>
+                        <button class="px-4 py-2 bg-slate-900 text-white text-[10px] font-black rounded-xl hover:bg-indigo-600 transition-colors">Full Report</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderAssignments() {
+            document.querySelectorAll('.active-class-name').forEach(el => el.innerText = activeClass);
+            document.getElementById('enrollment-count').innerText = schoolData[activeClass].length;
+            
+            const list = document.getElementById('subject-assignment-list');
+            list.innerHTML = SUBJECTS.map(sub => {
+                const isEnabled = subjectStatus[activeClass][sub];
+                return `
+                <div class="p-5 bg-slate-50 rounded-3xl flex justify-between items-center border border-transparent hover:border-slate-200 transition-all">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-600 font-black text-xs shadow-sm">${sub.charAt(0)}</div>
+                        <span class="text-sm font-black text-slate-700">${sub}</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only" ${isEnabled ? 'checked' : ''} onchange="toggleSubject('${sub}', this.checked)">
+                        <div class="block w-12 h-7 bg-slate-200 rounded-full shadow-inner"></div>
+                        <div class="dot absolute left-1 top-1 bg-white w-5 h-5 rounded-full shadow transition"></div>
+                    </label>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleSubject(sub, state) {
+            subjectStatus[activeClass][sub] = state;
+            // Optionally clear unlocked status if disabled
+            if(!state) unlockedSubjects = unlockedSubjects.filter(s => s !== sub);
+        }
+
+        function renderNav() {
+            const nav = document.getElementById('class-nav');
+            nav.innerHTML = '<p class="text-[10px] font-black text-slate-400 uppercase ml-4 mb-2 tracking-widest">Available Classes</p>' +
+                CLASSES.map(cls => `
+                    <button onclick="setActiveClass('${cls}')" class="w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold text-sm transition-all ${cls === activeClass ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-500 hover:bg-slate-50'}">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        ${cls}
+                    </button>
+                `).join('');
+        }
+
+        function setActiveClass(cls) {
+            activeClass = cls;
+            document.getElementById('current-class-title').innerText = cls;
+            renderNav();
+            switchView(activeView);
+        }
+
+        function handleHeaderClick(sub) {
+            if (unlockedSubjects.includes(sub)) return;
+            pendingSubject = sub;
+            document.getElementById('modal-subject-title').innerText = `Unlock ${sub}`;
+            document.getElementById('lock-modal').classList.remove('hidden');
+            document.getElementById('lock-error').classList.add('hidden');
+            document.getElementById('subject-key-input').value = '';
+            document.getElementById('subject-key-input').focus();
+        }
+
+        function updateScore(sid, sub, val) {
+            const student = schoolData[activeClass].find(s => s.id === sid);
+            if (student) {
+                student.scores[sub] = Math.min(100, Math.max(0, parseInt(val) || 0));
+                if(activeView === 'entry') renderTable();
+            }
+        }
+
+        document.getElementById('login-form').onsubmit = (e) => {
+            e.preventDefault();
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('main-view').classList.remove('hidden');
+            initData();
+            renderNav();
+            switchView('entry');
+        };
+
+        document.getElementById('logout-btn').onclick = () => location.reload();
+        document.getElementById('search-students').oninput = () => switchView(activeView);
+        document.getElementById('close-modal').onclick = () => document.getElementById('lock-modal').classList.add('hidden');
+        document.getElementById('lock-form').onsubmit = (e) => {
+            e.preventDefault();
+            const input = document.getElementById('subject-key-input').value;
+            if (input === (PASSWORDS[pendingSubject] || DEFAULT_KEY)) {
+                unlockedSubjects.push(pendingSubject);
+                document.getElementById('lock-modal').classList.add('hidden');
+                renderTable();
             } else {
-                btn.className = "w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all text-slate-500 hover:bg-slate-50 font-bold text-sm";
-                indicator.classList.add('hidden');
+                document.getElementById('lock-error').classList.remove('hidden');
+                document.getElementById('lock-card').classList.add('shake');
+                setTimeout(() => document.getElementById('lock-card').classList.remove('shake'), 400);
             }
-        });
-
-        // Show/Hide Pages
-        document.getElementById('page-equity').classList.toggle('hidden', tabId !== 'equity');
-        document.getElementById('page-loans').classList.toggle('hidden', tabId !== 'loans');
-    }
-
-    // Drawer Logic
-    function openDrawer(id) {
-        const s = state.shareholders.find(sh => sh.id === id);
-        if(!s) return;
-        
-        document.getElementById('drawer-name').innerText = s.name;
-        document.getElementById('drawer-avatar').innerText = getInitials(s.name);
-        document.getElementById('discussion-sidebar').classList.remove('hidden');
-        
-        const list = document.getElementById('comments-list');
-        list.innerHTML = s.discussions.length ? s.discussions.map(c => `
-            <div class="space-y-2 animate-slide-in">
-                <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-black text-slate-400 uppercase">${c.user}</span>
-                    <span class="text-[10px] font-bold text-slate-300">${c.date}</span>
-                </div>
-                <div class="bg-slate-50 p-5 rounded-[1.5rem] rounded-tl-none border border-slate-100 text-sm font-medium leading-relaxed text-slate-700 shadow-sm italic">
-                    "${c.text}"
-                </div>
-            </div>
-        `).join('') : '<div class="h-full flex flex-col items-center justify-center text-center opacity-40"><p class="text-sm font-bold">No active threads</p></div>';
-        lucide.createIcons();
-    }
-
-    function closeDrawer() {
-        document.getElementById('discussion-sidebar').classList.add('hidden');
-    }
-
-    // Initial load
-    window.onload = () => {
-        lucide.createIcons();
-        renderShareholders();
-        renderLoans();
-    }
-</script>
+        };
+    </script>
 </body>
 </html>
